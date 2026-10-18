@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexoApp Quick Test</title>
+  <meta name="theme-color" content="#000000">
+  <title>NexoApp Live Test</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body, #root {
@@ -36,49 +37,24 @@
       word-break: break-all;
     }
   </style>
+
+  <!-- Load local SDK file from your own repo -->
+  <script src="./zego-uikit-prebuilt.js"></script>
 </head>
 <body>
   <div id="root">
-    <div id="loading">Loading NexoApp Live engine...</div>
+    <div id="loading">Starting NexoApp Live Test...</div>
   </div>
 
-  <!-- Dynamic Loader with Fallback CDN -->
   <script>
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
-
-    async function initializeZegoSDK() {
-      // Primary CDN: jsDelivr
-      try {
-        await loadScript("https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js");
-      } catch (e1) {
-        console.warn("jsDelivr CDN failed, falling back to unpkg...");
-        // Fallback CDN: unpkg
-        try {
-          await loadScript("https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js");
-        } catch (e2) {
-          throw new Error("Unable to load ZEGOCLOUD SDK libraries from primary or backup CDNs. Please check your network connection.");
-        }
-      }
-    }
+    "use strict";
 
     window.addEventListener("load", async function() {
       try {
-        // Load the SDK dynamically first
-        await initializeZegoSDK();
-
         if (!window.ZegoUIKitPrebuilt) {
-          throw new Error("ZegoUIKitPrebuilt object failed to initialize.");
+          throw new Error("Local zego-uikit-prebuilt.js file was not found or failed to parse.");
         }
 
-        // Active test token
         const kitToken = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
 
         const params = new URLSearchParams(window.location.search);
@@ -102,15 +78,15 @@
           showMyCameraToggleButton: true,
           showMyMicrophoneToggleButton: true,
           onJoinRoom: () => {
-            console.log("Successfully joined the live stream room!");
+            console.log("Successfully joined live stream!");
           },
           onLeaveRoom: () => {
-            console.log("Left the room.");
+            console.log("Left room.");
           }
         });
 
       } catch (error) {
-        console.error("Test failed:", error);
+        console.error("Test error:", error);
         document.getElementById("root").innerHTML = `
           <div id="error-box">
             <h3>Test Error</h3>
