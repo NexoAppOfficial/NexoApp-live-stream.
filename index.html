@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#171321">
+
   <title>NexoApp Live</title>
 
   <style>
@@ -30,58 +31,79 @@
 
 <body>
   <div id="root">
-    <div id="status">Loading NexoApp Live...</div>
+    <p id="status">Loading NexoApp Live...</p>
   </div>
 
   <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
   <script>
-    // NexoApp Live configuration
-    const params = new URLSearchParams(location.search);
+    // =====================================
+    // NEXOAPP LIVE CONFIGURATION
+    // =====================================
 
+    const params = new URLSearchParams(
+      window.location.search
+    );
+
+    // User identity used to generate this Kit Token
     const userID = "nexo_live_test";
     const userName = "Nexo Test";
 
+    // Default live room
     const roomID =
       params.get("roomID") || "nexo_live_room_01";
 
+    // Host or Audience
     const roleName =
       params.get("role") || "Host";
 
-    // Temporary ZEGOCLOUD Kit Token
+    // Your newly generated temporary Kit Token
     const kitToken =
-      "04AAAAAGrVk0MADHujIq2xWWILOGA4dQC51CmtJ1uuiKHZ+2br/hAu7hVfSzYeQiUAr401+m4WkmeLilMcVAqzOQCmVbX//2XsBzJ55NXlroFHBOTWt8uY/ewLTsro4TGLPw/rSqeoONvjBnYr0edwywhiV1LtFl3R5tCwJeXf4ICfN1aY98w4YqS1TaY9sykxcomiOXmsU/KlvzcIHpRmB9bYCS8atOYaOEd2a/kE9F2bx4HNFJeZJPDJ7yy+fM29AoTDqUEbTDV6D9yr2D1wC/8B";
+      "04AAAAAGrVpoEADCfh1N8g0alUc2vU3QC5H8UDs2eYZAjh9IPZB3EX3o6+gyezB77fwo2uxB6EFJdc1eUmsgV8jAl2yIat7hyyzz+lRPq1ue0MVDxUsYOF5InHrOdkhRSM26FrS5JrQgUOBBBLpgHtCH1HhPa7LyVz+qgf7UoJCAUTEqQXvWa90Em0k5Nyn0QPkNcKRsTiKAqV/mXc5ONtRUeAB2OdEE6AWbCiRKWonObSglGuk5U2Wy78lF0x//PsKMSAJoznsnVVziFv5gHZyn8B";
+
+    // =====================================
+    // START LIVE STREAMING
+    // =====================================
 
     async function startNexoLive() {
       const root = document.getElementById("root");
 
       try {
+        // Check that the ZEGOCLOUD SDK loaded
         if (!window.ZegoUIKitPrebuilt) {
           throw new Error(
-            "ZEGOCLOUD UIKit failed to load. Check your internet connection."
+            "ZEGOCLOUD SDK did not load. Check your internet connection."
           );
         }
 
-        if (!kitToken) {
+        // Check token configuration
+        if (
+          !kitToken ||
+          kitToken === "PASTE_YOUR_NEW_KIT_TOKEN_HERE"
+        ) {
           throw new Error(
-            "A valid ZEGOCLOUD Kit Token is required."
+            "Kit Token is missing. Add your generated token."
           );
         }
 
+        // Create the ZEGOCLOUD UIKit instance
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
+        // Choose Host or Audience
         const role =
           roleName.toLowerCase() === "audience"
             ? ZegoUIKitPrebuilt.Audience
             : ZegoUIKitPrebuilt.Host;
 
+        // Link for viewers to join this room
         const audienceURL =
-          location.origin +
-          location.pathname +
+          window.location.origin +
+          window.location.pathname +
           "?roomID=" +
           encodeURIComponent(roomID) +
           "&role=Audience";
 
+        // Join the live room
         await zp.joinRoom({
           container: root,
 
@@ -109,19 +131,23 @@
         });
 
       } catch (error) {
-        console.error("NexoApp Live error:", error);
+        console.error(
+          "NexoApp Live error:",
+          error
+        );
 
         root.innerHTML = "";
 
-        const message = document.createElement("p");
-        message.id = "status";
-        message.textContent =
-          "Unable to start NexoApp Live. Check your internet connection, Kit Token, project configuration, and camera/microphone permissions.";
+        const errorMessage = document.createElement("p");
+        errorMessage.id = "status";
+        errorMessage.textContent =
+          "Unable to start NexoApp Live. Check your Kit Token, ZEGOCLOUD project, internet connection, and camera/microphone permissions.";
 
-        root.appendChild(message);
+        root.appendChild(errorMessage);
       }
     }
 
+    // Run the application
     startNexoLive();
   </script>
 </body>
