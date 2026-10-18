@@ -54,16 +54,22 @@
     // NEXOAPP LIVE CONFIGURATION
     // =====================================
 
+    // Ensure APP_ID is passed as a Number
     const APP_ID = 747640475;
-    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06".trim();
+    
+    // Ensure SERVER_SECRET has no whitespace/formatting issues
+    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";
 
     const params = new URLSearchParams(window.location.search);
 
-    const ROOM_ID = params.get("roomID") || "nexo_live_room_01";
+    // Sanitize Room ID to strictly allow alphanumeric, hyphens, and underscores
+    const rawRoom = params.get("roomID") || "nexo_live_room_01";
+    const ROOM_ID = String(rawRoom).replace(/[^a-zA-Z0-9_-]/g, "");
+
     const ROLE_NAME = params.get("role") || "Host";
 
-    // Unique alphanumeric user ID for whoever is loading the page
-    const USER_ID = "user_" + Math.random().toString(36).substring(2, 9);
+    // Standardized numeric-based User ID for ZEGOCLOUD authentication stability
+    const USER_ID = "user_" + Math.floor(Math.random() * 1000000);
     
     // Dynamic display name from URL or fallback default
     const USER_NAME = params.get("userName") || (ROLE_NAME.toLowerCase() === "host" ? "Host User" : "Audience Member");
