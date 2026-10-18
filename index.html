@@ -3,66 +3,103 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NexoApp Test Live</title>
+  <meta name="theme-color" content="#000000">
+  <title>NexoApp Live Test</title>
   <style>
-    html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; background-color: #000000; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
-    #error { padding: 30px; color: #ff5252; white-space: pre-wrap; word-break: break-word; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100vw; height: 100vh; background-color: #000000; color: #ffffff; font-family: Arial, sans-serif; overflow: hidden; }
+    #status { padding: 30px; text-align: center; color: #a0a0a0; font-size: 16px; }
+    #error-container { padding: 30px; color: #ff5252; }
+    #error-container h3 { margin-bottom: 12px; }
+    #error-container pre { background: #1e1e1e; padding: 16px; border-radius: 8px; color: #ffffff; white-space: pre-wrap; word-break: break-word; font-family: monospace; }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
 </head>
 <body>
-  <div id="root"><p style="padding:20px; color:#aaa;">Loading test room...</p></div>
+  <div id="root">
+    <p id="status">Connecting to NexoApp Live...</p>
+  </div>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-    
-    // Pull configuration straight from the URL parameters
-    const appId = Number(params.get("appID") || 747640475);
-    const serverSecret = params.get("secret");
-    const roomID = params.get("roomID") || "nexo_test_room";
-    const userID = params.get("userID") || "user_" + Math.floor(Math.random() * 1000);
-    const userName = params.get("userName") || "Nexo Tester";
-    const isHost = (params.get("role") || "host").toLowerCase() === "host";
+    "use strict";
 
-    function showError(msg) {
-      document.getElementById("root").innerHTML = `<div id="error"><h3>Test Setup Error</h3><pre>${msg}</pre></div>`;
+    function showError(title, message) {
+      document.getElementById("root").innerHTML = `
+        <div id="error-container">
+          <h3>${title}</h3>
+          <pre>${message}</pre>
+        </div>
+      `;
     }
 
-    try {
-      if (!serverSecret) {
-        throw new Error("Missing Server Secret!\n\nPass it in your URL like this:\n?secret=YOUR_SERVER_SECRET&roomID=room123");
-      }
-
-      // Generate test token dynamically on the fly
-      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-        appId,
-        serverSecret,
-        roomID,
-        userID,
-        userName
-      );
-
-      const zp = ZegoUIKitPrebuilt.create(kitToken);
-      document.getElementById("root").innerHTML = "";
-
-      zp.joinRoom({
-        container: document.querySelector("#root"),
-        scenario: {
-          mode: ZegoUIKitPrebuilt.LiveStreaming,
-          config: { role: isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience }
-        },
-        showPreJoinView: false,
-        turnOnCameraWhenJoining: isHost,
-        turnOnMicrophoneWhenJoining: isHost,
-        onLeaveRoom: () => {
-          if (window.AppInventor) {
-            window.AppInventor.setWebViewString("CALL_ENDED");
-          }
+    async function startLiveStream() {
+      try {
+        if (!window.ZegoUIKitPrebuilt) {
+          throw new Error("ZEGOCLOUD Web SDK failed to load. Please check your network connection.");
         }
-      });
-    } catch (err) {
-      showError(err.message || String(err));
+
+        const params = new URLSearchParams(window.location.search);
+        
+        // Extract query parameters from URL
+        const appId = Number(params.get("appID") || 747640475);
+        const secret = params.get("secret");
+        const roomID = params.get("roomID") || "nexo_test_room_01";
+        const userID = params.get("userID") || "user_" + Math.floor(Math.random() * 1000);
+        const userName = params.get("userName") || "Nexo Tester";
+        const roleParam = (params.get("role") || "Host").toLowerCase();
+
+        if (!secret) {
+          throw new Error(
+            "Missing Server Secret!\n\n" +
+            "You must pass your ZEGOCLOUD Server Secret in the URL query string like this:\n" +
+            "?secret=YOUR_SERVER_SECRET&roomID=room123&role=Host"
+          );
+        }
+
+        // Generate dynamic Kit Token for testing
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+          appId,
+          secret,
+          roomID,
+          userID,
+          userName
+        );
+
+        const isHost = roleParam === "host";
+        const role = isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        document.getElementById("root").innerHTML = "";
+
+        await zp.joinRoom({
+          container: document.getElementById("root"),
+          scenario: {
+            mode: ZegoUIKitPrebuilt.LiveStreaming,
+            config: { role: role }
+          },
+          showPreJoinView: false,
+          turnOnCameraWhenJoining: isHost,
+          turnOnMicrophoneWhenJoining: isHost,
+          showMyCameraToggleButton: isHost,
+          showMyMicrophoneToggleButton: isHost,
+          onJoinRoom: () => {
+            console.log("Successfully joined live stream room:", roomID);
+          },
+          onLeaveRoom: () => {
+            console.log("Left live stream.");
+            if (window.AppInventor) {
+              window.AppInventor.setWebViewString("LIVE_ENDED");
+            }
+          }
+        });
+
+      } catch (err) {
+        console.error("Initialization Error:", err);
+        showError("Test Setup Requirement", err.message || String(err));
+      }
     }
+
+    window.addEventListener("load", startLiveStream);
   </script>
 </body>
 </html>
