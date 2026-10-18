@@ -1,246 +1,68 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#171321">
-  <title>NexoApp Live</title>
-
+  <title>NexoApp Test Live</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    html, body, #root {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      background: #171321;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-    }
-
-    #root {
-      height: 100dvh;
-      min-height: 100%;
-      overflow: hidden;
-    }
-
-    #status {
-      padding: 20px;
-      color: white;
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-    }
+    html, body, #root { width: 100%; height: 100%; margin: 0; padding: 0; background-color: #000000; color: #fff; font-family: Arial, sans-serif; overflow: hidden; }
+    #error { padding: 30px; color: #ff5252; white-space: pre-wrap; word-break: break-word; }
   </style>
-
   <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
 </head>
-
 <body>
-  <div id="root">
-    <p id="status">Loading NexoApp Live...</p>
-  </div>
+  <div id="root"><p style="padding:20px; color:#aaa;">Loading test room...</p></div>
 
   <script>
-    "use strict";
+    const params = new URLSearchParams(window.location.search);
+    
+    // Pull configuration straight from the URL parameters
+    const appId = Number(params.get("appID") || 747640475);
+    const serverSecret = params.get("secret");
+    const roomID = params.get("roomID") || "nexo_test_room";
+    const userID = params.get("userID") || "user_" + Math.floor(Math.random() * 1000);
+    const userName = params.get("userName") || "Nexo Tester";
+    const isHost = (params.get("role") || "host").toLowerCase() === "host";
 
-    // =====================================
-    // NEXOAPP LIVE CONFIGURATION
-    // =====================================
-
-    // Correct App ID from your ZEGOCLOUD Console
-    const APP_ID = 747640475;
-
-    // LOCAL TESTING ONLY.
-    // Never publish your Server Secret in GitHub Pages.
-    // Replace this placeholder only in a private local test.
-    const SERVER_SECRET =
-      "REPLACE_WITH_YOUR_NEW_SERVER_SECRET_FOR_LOCAL_TESTING";
-
-    const params = new URLSearchParams(
-      window.location.search
-    );
-
-    // Room ID: host and audience must use the same value.
-    const rawRoom =
-      params.get("roomID") || "nexo_live_room_01";
-
-    const ROOM_ID = String(rawRoom).replace(
-      /[^a-zA-Z0-9_-]/g,
-      ""
-    );
-
-    // Host or Audience
-    const ROLE_NAME = (
-      params.get("role") || "Host"
-    ).toLowerCase();
-
-    // Display name can be passed through the URL.
-    const USER_NAME =
-      params.get("userName") ||
-      (ROLE_NAME === "host"
-        ? "Olaniyi Olaleye"
-        : "Audience Member");
-
-    // Use a stable ID for the host.
-    // Give each audience participant a unique ID.
-    const USER_ID =
-      ROLE_NAME === "host"
-        ? "Olaniyi_Olaleye"
-        : "audience_" +
-          Math.random().toString(36).slice(2, 12);
-
-    // =====================================
-    // ERROR DISPLAY
-    // =====================================
-
-    function showError(title, details) {
-      const root = document.getElementById("root");
-      root.replaceChildren();
-
-      const heading = document.createElement("h3");
-      heading.textContent = title;
-      heading.style.padding = "20px";
-
-      const message = document.createElement("pre");
-      message.style.cssText =
-        "padding:20px;white-space:pre-wrap;" +
-        "overflow-wrap:anywhere;color:white;";
-
-      message.textContent = details;
-
-      root.append(heading, message);
+    function showError(msg) {
+      document.getElementById("root").innerHTML = `<div id="error"><h3>Test Setup Error</h3><pre>${msg}</pre></div>`;
     }
 
-    // =====================================
-    // START NEXOAPP LIVE
-    // =====================================
-
-    async function startNexoLive() {
-      try {
-        if (!window.ZegoUIKitPrebuilt) {
-          throw new Error(
-            "ZEGOCLOUD SDK failed to load. " +
-            "Check your internet connection and reload."
-          );
-        }
-
-        if (!APP_ID || !ROOM_ID) {
-          throw new Error(
-            "The App ID or Room ID is missing."
-          );
-        }
-
-        if (
-          !SERVER_SECRET ||
-          SERVER_SECRET.startsWith("REPLACE_WITH")
-        ) {
-          throw new Error(
-            "Authentication is not configured. " +
-            "The Server Secret placeholder must not be " +
-            "used as a real credential. Configure " +
-            "authentication securely before joining."
-          );
-        }
-
-        // TEST TOKEN GENERATION ONLY.
-        // This method uses the Server Secret in the browser.
-        // Do not deploy this configuration publicly.
-        const kitToken =
-          ZegoUIKitPrebuilt.generateKitTokenForTest(
-            APP_ID,
-            SERVER_SECRET,
-            ROOM_ID,
-            USER_ID,
-            USER_NAME
-          );
-
-        if (!kitToken) {
-          throw new Error(
-            "Failed to generate the ZEGOCLOUD Kit Token."
-          );
-        }
-
-        const role =
-          ROLE_NAME === "audience"
-            ? ZegoUIKitPrebuilt.Audience
-            : ZegoUIKitPrebuilt.Host;
-
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-        // Build the audience link using the current page.
-        const baseUrl =
-          window.location.origin +
-          window.location.pathname;
-
-        const audienceURL =
-          baseUrl +
-          "?roomID=" + encodeURIComponent(ROOM_ID) +
-          "&role=Audience";
-
-        const root = document.getElementById("root");
-        root.replaceChildren();
-
-        await zp.joinRoom({
-          container: root,
-
-          scenario: {
-            mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: {
-              role: role
-            }
-          },
-
-          showPreJoinView: true,
-
-          turnOnCameraWhenJoining:
-            role === ZegoUIKitPrebuilt.Host,
-
-          turnOnMicrophoneWhenJoining:
-            role === ZegoUIKitPrebuilt.Host,
-
-          sharedLinks: [
-            {
-              name: "Watch this live",
-              url: audienceURL
-            }
-          ],
-
-          onJoinRoom: function () {
-            console.log(
-              "NexoApp Live joined successfully:",
-              ROOM_ID
-            );
-          },
-
-          onLeaveRoom: function () {
-            console.log("NexoApp Live ended.");
-          }
-        });
-
-      } catch (error) {
-        console.error("NexoApp Live error:", error);
-
-        showError(
-          "NexoApp Live could not start",
-          error && error.message
-            ? error.message
-            : String(error)
-        );
+    try {
+      if (!serverSecret) {
+        throw new Error("Missing Server Secret!\n\nPass it in your URL like this:\n?secret=YOUR_SERVER_SECRET&roomID=room123");
       }
-    }
 
-    // Start only after the page has loaded.
-    window.addEventListener(
-      "load",
-      startNexoLive
-    );
+      // Generate test token dynamically on the fly
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+        appId,
+        serverSecret,
+        roomID,
+        userID,
+        userName
+      );
+
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      document.getElementById("root").innerHTML = "";
+
+      zp.joinRoom({
+        container: document.querySelector("#root"),
+        scenario: {
+          mode: ZegoUIKitPrebuilt.LiveStreaming,
+          config: { role: isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience }
+        },
+        showPreJoinView: false,
+        turnOnCameraWhenJoining: isHost,
+        turnOnMicrophoneWhenJoining: isHost,
+        onLeaveRoom: () => {
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString("CALL_ENDED");
+          }
+        }
+      });
+    } catch (err) {
+      showError(err.message || String(err));
+    }
   </script>
 </body>
 </html>
