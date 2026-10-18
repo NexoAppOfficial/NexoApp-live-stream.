@@ -1,175 +1,87 @@
-<!DOCTYPE html>  <html lang="en">  
-<head>  
-  <meta charset="UTF-8">  
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
-  <meta name="theme-color" content="#171321">  
-  <title>NexoApp Live</title>    <style>  
-    * {  
-      box-sizing: border-box;  
-    }  
-  
-    html, body, #root {  
-      width: 100%;  
-      height: 100%;  
-      margin: 0;  
-      padding: 0;  
-    }  
-  
-    body {  
-      background: #171321;  
-      color: #ffffff;  
-      font-family: Arial, sans-serif;  
-    }  
-  
-    #root {  
-      height: 100dvh;  
-      min-height: 100%;  
-      overflow: hidden;  
-    }  
-  
-    #status {  
-      padding: 20px;  
-      color: #ffffff;  
-      white-space: pre-wrap;  
-      overflow-wrap: anywhere;  
-    }  
-  </style>  </head>  <body>  
-  <div id="root">  
-    <p id="status">Loading NexoApp Live...</p>  
-  </div>    <!-- Stable ZEGOCLOUD SDK via jsDelivr CDN -->    <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>    <script>  
-    "use strict";  
-  
-    // =====================================  
-    // NEXOAPP LIVE CONFIGURATION  
-    // =====================================  
-  
-    // Correct AppID verified from your ZEGOCLOUD Console  
-    const APP_ID = 747840475;  
-      
-    // Ensure SERVER_SECRET has no leading/trailing whitespace  
-    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";  
-  
-    const params = new URLSearchParams(window.location.search);  
-  
-    // Sanitize Room ID to strictly allow alphanumeric characters, hyphens, and underscores  
-    const rawRoom = params.get("roomID") || "nexo_live_room_01";  
-    const ROOM_ID = String(rawRoom).replace(/[^a-zA-Z0-9_-]/g, "");  
-  
-    const ROLE_NAME = params.get("role") || "Host";  
-  
-    // Standardized numeric-based User ID for ZEGOCLOUD authentication stability  
-    const USER_ID = "user_" + Math.floor(Math.random() * 1000000);  
-      
-    // Dynamic display name from URL or fallback default  
-    const USER_NAME = params.get("userName") || (ROLE_NAME.toLowerCase() === "host" ? "Host User" : "Audience Member");  
-  
-    // =====================================  
-    // DISPLAY ERRORS  
-    // =====================================  
-  
-    function showError(title, details) {  
-      const root = document.getElementById("root");  
-      root.replaceChildren();  
-  
-      const heading = document.createElement("h3");  
-      heading.textContent = title;  
-  
-      const message = document.createElement("pre");  
-      message.style.cssText =  
-        "padding:20px;white-space:pre-wrap;" +  
-        "overflow-wrap:anywhere;color:white;";  
-      message.textContent = details;  
-  
-      root.append(heading, message);  
-    }  
-  
-    // =====================================  
-    // START LIVE STREAMING  
-    // =====================================  
-  
-    async function startNexoLive() {  
-      try {  
-        if (!window.ZegoUIKitPrebuilt) {  
-          throw new Error(  
-            "ZEGOCLOUD SDK failed to load. Check your internet connection."  
-          );  
-        }  
-  
-        // Dynamically generate test token for this specific user & room  
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(  
-          APP_ID,  
-          SERVER_SECRET,  
-          ROOM_ID,  
-          USER_ID,  
-          USER_NAME  
-        );  
-  
-        if (!kitToken) {  
-          throw new Error("Failed to generate ZEGOCLOUD Kit Token.");  
-        }  
-  
-        // Select participant role  
-        const role =  
-          ROLE_NAME.toLowerCase() === "audience"  
-            ? ZegoUIKitPrebuilt.Audience  
-            : ZegoUIKitPrebuilt.Host;  
-  
-        // Initialize UIKit with the generated token  
-        const zp = ZegoUIKitPrebuilt.create(kitToken);  
-  
-        // Uses current domain automatically (https://nexoappofficial.github.io/...)  
-        const baseUrl = window.location.origin + window.location.pathname;  
-        const audienceURL =  
-          baseUrl +  
-          "?roomID=" +  
-          encodeURIComponent(ROOM_ID) +  
-          "&role=Audience";  
-  
-        const root = document.getElementById("root");  
-        root.replaceChildren();  
-  
-        await zp.joinRoom({  
-          container: root,  
-  
-          scenario: {  
-            mode: ZegoUIKitPrebuilt.LiveStreaming,  
-            config: {  
-              role: role  
-            }  
-          },  
-  
-          showPreJoinView: true,  
-  
-          turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,  
-          turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,  
-  
-          sharedLinks: [  
-            {  
-              name: "Watch this live",  
-              url: audienceURL  
-            }  
-          ],  
-  
-          onJoinRoom: function () {  
-            console.log("NexoApp Live joined successfully:", ROOM_ID);  
-          },  
-  
-          onLeaveRoom: function () {  
-            console.log("NexoApp Live ended.");  
-          }  
-        });  
-  
-      } catch (error) {  
-        console.error("NexoApp Live error:", error);  
-  
-        showError(  
-          "NexoApp Live could not start",  
-          error && error.stack ? error.stack : String(error)  
-        );  
-      }  
-    }  
-  
-    // Wait for the page to finish loading  
-    window.addEventListener("load", startNexoLive);  
-  </script>  </body>  
-</html>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexoApp Quick Test</title>
+  <style>
+    html, body, #root {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-size: 18px;
+      color: #a0a0a0;
+    }
+  </style>
+  <!-- ZEGOCLOUD UIKit Prebuilt SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
+</head>
+<body>
+  <div id="root">
+    <div id="loading">Starting NexoApp Live Test...</div>
+  </div>
+
+  <script>
+    window.addEventListener("load", async function() {
+      try {
+        // Your pre-generated test token for user: Olaniyi
+        const kitToken = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
+
+        // Check URL parameters to switch between Host and Audience if needed
+        const params = new URLSearchParams(window.location.search);
+        const roleParam = (params.get("role") || "Host").toLowerCase();
+        const role = roleParam === "audience" ? ZegoUIKitPrebuilt.Audience : ZegoUIKitPrebuilt.Host;
+
+        // Initialize Zego UIKit Prebuilt
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+        // Clear loading message
+        const rootElement = document.getElementById("root");
+        rootElement.innerHTML = "";
+
+        // Join the room
+        await zp.joinRoom({
+          container: rootElement,
+          scenario: {
+            mode: ZegoUIKitPrebuilt.LiveStreaming,
+            config: {
+              role: role
+            }
+          },
+          showPreJoinView: false,
+          turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,
+          turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
+          showMyCameraToggleButton: true,
+          showMyMicrophoneToggleButton: true,
+          onJoinRoom: () => {
+            console.log("Successfully joined the live stream room!");
+          },
+          onLeaveRoom: () => {
+            console.log("Left the room.");
+          }
+        });
+
+      } catch (error) {
+        console.error("Test failed:", error);
+        document.getElementById("root").innerHTML = `
+          <div style="padding: 30px; color: #ff5252;">
+            <h3>Test Error</h3>
+            <pre>${error.message || error}</pre>
+          </div>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
