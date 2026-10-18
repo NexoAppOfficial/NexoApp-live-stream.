@@ -5,26 +5,37 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#171321">
-
   <title>NexoApp Live</title>
 
   <style>
-    html,
-    body,
-    #root {
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body, #root {
       width: 100%;
       height: 100%;
       margin: 0;
       padding: 0;
-      overflow: hidden;
+    }
+
+    body {
       background: #171321;
+      color: #ffffff;
       font-family: Arial, sans-serif;
     }
 
+    #root {
+      height: 100dvh;
+      min-height: 100%;
+      overflow: hidden;
+    }
+
     #status {
-      color: white;
       padding: 20px;
-      text-align: center;
+      color: #ffffff;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
     }
   </style>
 </head>
@@ -37,73 +48,90 @@
   <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
   <script>
+    "use strict";
+
     // =====================================
     // NEXOAPP LIVE CONFIGURATION
     // =====================================
+
+    const APP_ID = 747640475;
+
+    const USER_ID = "Olaniyi Olaleye"
+
+ const USER_NAME = "Olaniyi Olaleye";
 
     const params = new URLSearchParams(
       window.location.search
     );
 
-    // User identity used to generate this Kit Token
-    const userID = "nexo_live_test";
-    const userName = "Olaniyi Olaleye"
-
-    // Default live room
-    const roomID =
+    const ROOM_ID =
       params.get("roomID") || "nexo_live_room_01";
 
-    // Host or Audience
-    const roleName =
+    const ROLE_NAME =
       params.get("role") || "Host";
 
-    // Your newly generated temporary Kit Token
-    const kitToken =
+    // Your newly generated ZEGOCLOUD Kit Token
+    const KIT_TOKEN =
       "04AAAAAGrVpoEADCfh1N8g0alUc2vU3QC5H8UDs2eYZAjh9IPZB3EX3o6+gyezB77fwo2uxB6EFJdc1eUmsgV8jAl2yIat7hyyzz+lRPq1ue0MVDxUsYOF5InHrOdkhRSM26FrS5JrQgUOBBBLpgHtCH1HhPa7LyVz+qgf7UoJCAUTEqQXvWa90Em0k5Nyn0QPkNcKRsTiKAqV/mXc5ONtRUeAB2OdEE6AWbCiRKWonObSglGuk5U2Wy78lF0x//PsKMSAJoznsnVVziFv5gHZyn8B";
+
+    // =====================================
+    // DISPLAY ERRORS
+    // =====================================
+
+    function showError(title, details) {
+      const root = document.getElementById("root");
+      root.replaceChildren();
+
+      const heading = document.createElement("h3");
+      heading.textContent = title;
+
+      const message = document.createElement("pre");
+      message.style.cssText =
+        "padding:20px;white-space:pre-wrap;" +
+        "overflow-wrap:anywhere;color:white;";
+      message.textContent = details;
+
+      root.append(heading, message);
+    }
 
     // =====================================
     // START LIVE STREAMING
     // =====================================
 
     async function startNexoLive() {
-      const root = document.getElementById("root");
-
       try {
-        // Check that the ZEGOCLOUD SDK loaded
         if (!window.ZegoUIKitPrebuilt) {
           throw new Error(
-            "ZEGOCLOUD SDK did not load. Check your internet connection."
+            "ZEGOCLOUD SDK failed to load. Check your internet connection."
           );
         }
 
-        // Check token configuration
-        if (
-          !kitToken ||
-          kitToken === "PASTE_YOUR_NEW_KIT_TOKEN_HERE"
-        ) {
+        if (!KIT_TOKEN) {
           throw new Error(
-            "Kit Token is missing. Add your generated token."
+            "The ZEGOCLOUD Kit Token is missing."
           );
         }
 
-        // Create the ZEGOCLOUD UIKit instance
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-        // Choose Host or Audience
+        // Select the participant role
         const role =
-          roleName.toLowerCase() === "audience"
+          ROLE_NAME.toLowerCase() === "audience"
             ? ZegoUIKitPrebuilt.Audience
             : ZegoUIKitPrebuilt.Host;
 
-        // Link for viewers to join this room
+        // Initialize UIKit with the Kit Token
+        const zp = ZegoUIKitPrebuilt.create(KIT_TOKEN);
+
+        // Shareable audience link for the same room
         const audienceURL =
           window.location.origin +
           window.location.pathname +
           "?roomID=" +
-          encodeURIComponent(roomID) +
+          encodeURIComponent(ROOM_ID) +
           "&role=Audience";
 
-        // Join the live room
+        const root = document.getElementById("root");
+        root.replaceChildren();
+
         await zp.joinRoom({
           container: root,
 
@@ -117,43 +145,44 @@
           showPreJoinView: true,
 
           turnOnCameraWhenJoining:
-            roleName.toLowerCase() !== "audience",
+            role === ZegoUIKitPrebuilt.Host,
 
           turnOnMicrophoneWhenJoining:
-            roleName.toLowerCase() !== "audience",
+            role === ZegoUIKitPrebuilt.Host,
 
           sharedLinks: [
             {
               name: "Watch this live",
               url: audienceURL
             }
-          ]
+          ],
+
+          onJoinRoom: function () {
+            console.log(
+              "NexoApp Live joined:",
+              ROOM_ID
+            );
+          },
+
+          onLeaveRoom: function () {
+            console.log("NexoApp Live ended.");
+          }
         });
 
-      } 
-} catch (error) {
-  console.error("NexoApp Live error:", error);
+      } catch (error) {
+        console.error("NexoApp Live error:", error);
 
-  const root = document.getElementById("root");
-  root.innerHTML = "";
-
-  const errorMessage = document.createElement("p");
-  errorMessage.style.cssText =
-    "color:white;padding:20px;font-family:Arial;overflow-wrap:anywhere;";
-
-  errorMessage.textContent =
-    "NexoApp Live error: " +
-    (error && error.message
-      ? error.message
-      : String(error));
-
-  root.appendChild(errorMessage);
-}
+        showError(
+          "NexoApp Live could not start",
+          error && error.stack
+            ? error.stack
+            : String(error)
+        );
       }
     }
 
-    // Run the application
-    startNexoLive();
+    // Wait for the page to finish loading
+    window.addEventListener("load", startNexoLive);
   </script>
 </body>
 </html>
