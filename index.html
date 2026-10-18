@@ -44,7 +44,7 @@
     <p id="status">Loading NexoApp Live...</p>
   </div>
 
-  <!-- Pinned stable version of ZEGOCLOUD UIKit Prebuilt to fix chunk loading & getVersion issues -->
+  <!-- Pinned stable version of ZEGOCLOUD UIKit Prebuilt -->
   <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt@2.18.1/zego-uikit-prebuilt.js"></script>
 
   <script>
@@ -53,12 +53,6 @@
     // =====================================
     // NEXOAPP LIVE CONFIGURATION
     // =====================================
-
-    const APP_ID = 747640475;
-    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";
-
-    const USER_ID = "nexo_live_" + Math.floor(Math.random() * 10000);
-    const USER_NAME = "Olaniyi Olaleye";
 
     const params = new URLSearchParams(
       window.location.search
@@ -69,6 +63,10 @@
 
     const ROLE_NAME =
       params.get("role") || "Host";
+
+    // Your official pre-generated ZEGOCLOUD Kit Token from the dashboard
+    const KIT_TOKEN =
+      "04AAAAAGrVpoEADCfh1N8g0alUc2vU3QC5H8UDs2eYZAjh9IPZB3EX3o6+gyezB77fwo2uxB6EFJdc1eUmsgV8jAl2yIat7hyyzz+lRPq1ue0MVDxUsYOF5InHrOdkhRSM26FrS5JrQgUOBBBLpgHtCH1HhPa7LyVz+qgf7UoJCAUTEqQXvWa90Em0k5Nyn0QPkNcKRsTiKAqV/mXc5ONtRUeAB2OdEE6AWbCiRKWonObSglGuk5U2Wy78lF0x//PsKMSAJoznsnVVziFv5gHZyn8B";
 
     // =====================================
     // DISPLAY ERRORS
@@ -102,18 +100,9 @@
           );
         }
 
-        // Generate the test Kit Token dynamically using App ID and Server Secret[span_0](start_span)[span_0](end_span)
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-          APP_ID,
-          SERVER_SECRET,
-          ROOM_ID,
-          USER_ID,
-          USER_NAME
-        );
-
-        if (!kitToken) {
+        if (!KIT_TOKEN) {
           throw new Error(
-            "Failed to generate ZEGOCLOUD Kit Token."
+            "The ZEGOCLOUD Kit Token is missing."
           );
         }
 
@@ -123,8 +112,8 @@
             ? ZegoUIKitPrebuilt.Audience
             : ZegoUIKitPrebuilt.Host;
 
-        // Initialize UIKit with the generated Kit Token
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
+        // Initialize UIKit directly with your dashboard Kit Token and pinned SDK
+        const zp = ZegoUIKitPrebuilt.create(KIT_TOKEN);
 
         // Shareable audience link for the same room
         const audienceURL =
