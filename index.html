@@ -63,7 +63,7 @@
     const ROLE_NAME = params.get("role") || "Host";
 
     const USER_ID = "user_" + Math.floor(Math.random() * 100000);
-    const USER_NAME = "Olaniyi Olaleye";
+    const USER_NAME = params.get("userName") || "Olaniyi Olaleye";
 
     // =====================================
     // DISPLAY ERRORS
@@ -119,11 +119,10 @@
         // Initialize UIKit with the generated token
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-        // Clean audience shareable link generation for GitHub Pages
-        const cleanPath = window.location.pathname.split('?')[0];
+        // Robust base URL extraction avoiding GitHub Pages path corruption
+        const baseUrl = window.location.href.split('?')[0];
         const audienceURL =
-          window.location.origin +
-          cleanPath +
+          baseUrl +
           "?roomID=" +
           encodeURIComponent(ROOM_ID) +
           "&role=Audience";
