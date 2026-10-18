@@ -49,8 +49,10 @@
         );
 
         // Role: Host or Audience
-        let role = getUrlParams(window.location.href)['role'] || 'Host';
-        role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
+        const roleParam = getUrlParams(window.location.href)['role'] || 'Host';
+        const role = (roleParam === 'Audience') 
+            ? ZegoUIKitPrebuilt.Audience 
+            : ZegoUIKitPrebuilt.Host;
 
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
@@ -58,12 +60,13 @@
             scenario: {
                 mode: ZegoUIKitPrebuilt.LiveStreaming,
                 config: {
-                    role,
+                    role: role,
                 },
             },
             sharedLinks: [{
                 name: 'Join as Audience',
-                url: 'https://nexoappofficial.github.io/nexo-live-stream/?roomID=' + roomID + '&role=Audience'
+                // ✅ FIXED: includes the trailing period
+                url: 'https://nexoappofficial.github.io/nexo-live-stream./?roomID=' + roomID + '&role=Audience'
             }],
             showScreenSharingButton: true,
             showTextChat: true,
