@@ -1,145 +1,175 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#171321">
-  <title>NexoApp Live</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html, body, #root {
-      width: 100vw;
-      height: 100vh;
-      margin: 0;
-      padding: 0;
-      background: #171321;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    #status {
-      padding: 24px;
-      color: #ffffff;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    #error-container {
-      padding: 24px;
-      color: #ff5252;
-    }
-
-    #error-container h3 {
-      margin-bottom: 12px;
-    }
-
-    #error-container pre {
-      background: #1e1e1e;
-      padding: 16px;
-      border-radius: 8px;
-      color: #ffffff;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-  </style>
-
-  <!-- Primary CDN: UNPKG Official ZEGOCLOUD SDK -->
-  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-
-  <!-- Fallback CDN: jsDelivr -->
-  <script>
-    if (!window.ZegoUIKitPrebuilt) {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"><\/script>');
-    }
-  </script>
-</head>
-
-<body>
-  <div id="root">
-    <p id="status">Loading NexoApp Live engine...</p>
-  </div>
-
-  <script>
-    "use strict";
-
-    // Correct App ID
-    const DEFAULT_APP_ID = 747640475;
-
-    // Fallback Kit Token (Generated for user Olaniyi)
-    const DEFAULT_KIT_TOKEN = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
-
-    function showError(title, details) {
-      const root = document.getElementById("root");
-      root.innerHTML = `
-        <div id="error-container">
-          <h3>${title}</h3>
-          <pre>${details}</pre>
-        </div>
-      `;
-    }
-
-    async function startNexoLive() {
-      try {
-        if (!window.ZegoUIKitPrebuilt) {
-          throw new Error("ZEGOCLOUD SDK failed to load. Check your network connection.");
-        }
-
-        const params = new URLSearchParams(window.location.search);
-
-        const kitToken = params.get("token") || DEFAULT_KIT_TOKEN;
-        const roleParam = (params.get("role") || "Host").toLowerCase();
-        const isHost = roleParam === "host";
-        const role = isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
-
-        const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-        const root = document.getElementById("root");
-        root.replaceChildren();
-
-        await zp.joinRoom({
-          container: root,
-
-          scenario: {
-            mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: {
-              role: role
-            }
-          },
-
-          showPreJoinView: false,
-
-          turnOnCameraWhenJoining: isHost,
-          turnOnMicrophoneWhenJoining: isHost,
-
-          onJoinRoom: function () {
-            console.log("NexoApp Live joined successfully.");
-          },
-
-          onLeaveRoom: function () {
-            console.log("NexoApp Live ended.");
-            if (window.AppInventor) {
-              window.AppInventor.setWebViewString("LIVE_ENDED");
-            }
-          }
-        });
-
-      } catch (error) {
-        console.error("NexoApp Live error:", error);
-        showError(
-          "NexoApp Live Could Not Start",
-          error && error.message ? error.message : String(error)
-        );
-      }
-    }
-
-    window.addEventListener("load", startNexoLive);
-  </script>
-</body>
-</html>
+<!DOCTYPE html>  <html lang="en">  
+<head>  
+  <meta charset="UTF-8">  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+  <meta name="theme-color" content="#171321">  
+  <title>NexoApp Live</title>    <style>  
+    * {  
+      box-sizing: border-box;  
+    }  
+  
+    html, body, #root {  
+      width: 100%;  
+      height: 100%;  
+      margin: 0;  
+      padding: 0;  
+    }  
+  
+    body {  
+      background: #171321;  
+      color: #ffffff;  
+      font-family: Arial, sans-serif;  
+    }  
+  
+    #root {  
+      height: 100dvh;  
+      min-height: 100%;  
+      overflow: hidden;  
+    }  
+  
+    #status {  
+      padding: 20px;  
+      color: #ffffff;  
+      white-space: pre-wrap;  
+      overflow-wrap: anywhere;  
+    }  
+  </style>  </head>  <body>  
+  <div id="root">  
+    <p id="status">Loading NexoApp Live...</p>  
+  </div>    <!-- Stable ZEGOCLOUD SDK via jsDelivr CDN -->    <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>    <script>  
+    "use strict";  
+  
+    // =====================================  
+    // NEXOAPP LIVE CONFIGURATION  
+    // =====================================  
+  
+    // Correct AppID verified from your ZEGOCLOUD Console  
+    const APP_ID = 747840475;  
+      
+    // Ensure SERVER_SECRET has no leading/trailing whitespace  
+    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";  
+  
+    const params = new URLSearchParams(window.location.search);  
+  
+    // Sanitize Room ID to strictly allow alphanumeric characters, hyphens, and underscores  
+    const rawRoom = params.get("roomID") || "nexo_live_room_01";  
+    const ROOM_ID = String(rawRoom).replace(/[^a-zA-Z0-9_-]/g, "");  
+  
+    const ROLE_NAME = params.get("role") || "Host";  
+  
+    // Standardized numeric-based User ID for ZEGOCLOUD authentication stability  
+    const USER_ID = "user_" + Math.floor(Math.random() * 1000000);  
+      
+    // Dynamic display name from URL or fallback default  
+    const USER_NAME = params.get("userName") || (ROLE_NAME.toLowerCase() === "host" ? "Host User" : "Audience Member");  
+  
+    // =====================================  
+    // DISPLAY ERRORS  
+    // =====================================  
+  
+    function showError(title, details) {  
+      const root = document.getElementById("root");  
+      root.replaceChildren();  
+  
+      const heading = document.createElement("h3");  
+      heading.textContent = title;  
+  
+      const message = document.createElement("pre");  
+      message.style.cssText =  
+        "padding:20px;white-space:pre-wrap;" +  
+        "overflow-wrap:anywhere;color:white;";  
+      message.textContent = details;  
+  
+      root.append(heading, message);  
+    }  
+  
+    // =====================================  
+    // START LIVE STREAMING  
+    // =====================================  
+  
+    async function startNexoLive() {  
+      try {  
+        if (!window.ZegoUIKitPrebuilt) {  
+          throw new Error(  
+            "ZEGOCLOUD SDK failed to load. Check your internet connection."  
+          );  
+        }  
+  
+        // Dynamically generate test token for this specific user & room  
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(  
+          APP_ID,  
+          SERVER_SECRET,  
+          ROOM_ID,  
+          USER_ID,  
+          USER_NAME  
+        );  
+  
+        if (!kitToken) {  
+          throw new Error("Failed to generate ZEGOCLOUD Kit Token.");  
+        }  
+  
+        // Select participant role  
+        const role =  
+          ROLE_NAME.toLowerCase() === "audience"  
+            ? ZegoUIKitPrebuilt.Audience  
+            : ZegoUIKitPrebuilt.Host;  
+  
+        // Initialize UIKit with the generated token  
+        const zp = ZegoUIKitPrebuilt.create(kitToken);  
+  
+        // Uses current domain automatically (https://nexoappofficial.github.io/...)  
+        const baseUrl = window.location.origin + window.location.pathname;  
+        const audienceURL =  
+          baseUrl +  
+          "?roomID=" +  
+          encodeURIComponent(ROOM_ID) +  
+          "&role=Audience";  
+  
+        const root = document.getElementById("root");  
+        root.replaceChildren();  
+  
+        await zp.joinRoom({  
+          container: root,  
+  
+          scenario: {  
+            mode: ZegoUIKitPrebuilt.LiveStreaming,  
+            config: {  
+              role: role  
+            }  
+          },  
+  
+          showPreJoinView: true,  
+  
+          turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,  
+          turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,  
+  
+          sharedLinks: [  
+            {  
+              name: "Watch this live",  
+              url: audienceURL  
+            }  
+          ],  
+  
+          onJoinRoom: function () {  
+            console.log("NexoApp Live joined successfully:", ROOM_ID);  
+          },  
+  
+          onLeaveRoom: function () {  
+            console.log("NexoApp Live ended.");  
+          }  
+        });  
+  
+      } catch (error) {  
+        console.error("NexoApp Live error:", error);  
+  
+        showError(  
+          "NexoApp Live could not start",  
+          error && error.stack ? error.stack : String(error)  
+        );  
+      }  
+    }  
+  
+    // Wait for the page to finish loading  
+    window.addEventListener("load", startNexoLive);  
+  </script>  </body>  
+</html>  
