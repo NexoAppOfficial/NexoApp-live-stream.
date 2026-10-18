@@ -54,15 +54,15 @@
     // NEXOAPP LIVE CONFIGURATION
     // =====================================
 
-    // Ensure APP_ID is passed as a Number
-    const APP_ID = 747640475;
+    // Correct AppID verified from your ZEGOCLOUD Console
+    const APP_ID = 747840475;
     
-    // Ensure SERVER_SECRET has no whitespace/formatting issues
+    // Ensure SERVER_SECRET has no leading/trailing whitespace
     const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";
 
     const params = new URLSearchParams(window.location.search);
 
-    // Sanitize Room ID to strictly allow alphanumeric, hyphens, and underscores
+    // Sanitize Room ID to strictly allow alphanumeric characters, hyphens, and underscores
     const rawRoom = params.get("roomID") || "nexo_live_room_01";
     const ROOM_ID = String(rawRoom).replace(/[^a-zA-Z0-9_-]/g, "");
 
