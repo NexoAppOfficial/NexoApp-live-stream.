@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0">
+  <title>NexoApp Live</title>
+  <style>
+    html, body, #root {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #171321;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+
+    // Replace these with the values matching your new Kit Token.
+    const userID = "nexo_live_test";
+    const userName = "Nexo Test";
+    const roomID = params.get("roomID") || "nexo_live_room_01";
+
+    // Paste a temporary Kit Token generated for this user
+    // and the matching Live Streaming project.
+    const kitToken = "PASTE_YOUR_NEW_KIT_TOKEN_HERE";
+
+    const roleName = params.get("role") || "Host";
+    const role = roleName === "Audience"
+      ? ZegoUIKitPrebuilt.Audience
+      : ZegoUIKitPrebuilt.Host;
+
+    if (kitToken === "PASTE_YOUR_NEW_KIT_TOKEN_HERE") {
+      document.getElementById("root").innerHTML =
+        "<p style='color:white;padding:20px'>" +
+        "Setup needed: add your temporary Kit Token.</p>";
+    } else {
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+      zp.joinRoom({
+        container: document.getElementById("root"),
+        scenario: {
+          mode: ZegoUIKitPrebuilt.LiveStreaming,
+          config: { role }
+        },
+        showPreJoinView: true,
+        turnOnCameraWhenJoining: true,
+        turnOnMicrophoneWhenJoining: true,
+        sharedLinks: [{
+          name: "Watch this live",
+          url: location.origin + location.pathname +
+            "?roomID=" + encodeURIComponent(roomID) +
+            "&role=Audience"
+        }]
+      });
+    }
+  </script>
+</body>
+</html>
