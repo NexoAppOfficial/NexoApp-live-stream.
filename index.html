@@ -5,16 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#000000">
   <title>NexoApp Live Test</title>
+
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #root { width: 100vw; height: 100vh; background-color: #000000; color: #ffffff; font-family: Arial, sans-serif; overflow: hidden; }
-    #status { padding: 30px; text-align: center; color: #a0a0a0; font-size: 16px; }
-    #error-container { padding: 30px; color: #ff5252; }
-    #error-container h3 { margin-bottom: 12px; }
-    #error-container pre { background: #1e1e1e; padding: 16px; border-radius: 8px; color: #ffffff; white-space: pre-wrap; word-break: break-word; font-family: monospace; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body, #root {
+      width: 100vw;
+      height: 100vh;
+      background-color: #000000;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+
+    #status {
+      padding: 30px;
+      text-align: center;
+      color: #a0a0a0;
+      font-size: 16px;
+    }
+
+    #error-container {
+      padding: 30px;
+      color: #ff5252;
+    }
+
+    #error-container h3 {
+      margin-bottom: 12px;
+    }
+
+    #error-container pre {
+      background: #1e1e1e;
+      padding: 16px;
+      border-radius: 8px;
+      color: #ffffff;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
   </style>
+
   <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
 </head>
+
 <body>
   <div id="root">
     <p id="status">Connecting to NexoApp Live...</p>
@@ -22,6 +58,11 @@
 
   <script>
     "use strict";
+
+    // Default testing configuration
+    const TEST_TOKEN = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
+    const TEST_USER_ID = "Olaniyi";
+    const TEST_USER_NAME = "Olaniyi";
 
     function showError(title, message) {
       document.getElementById("root").innerHTML = `
@@ -35,35 +76,18 @@
     async function startLiveStream() {
       try {
         if (!window.ZegoUIKitPrebuilt) {
-          throw new Error("ZEGOCLOUD Web SDK failed to load. Please check your network connection.");
+          throw new Error("ZEGOCLOUD SDK failed to load. Please check your internet connection.");
         }
 
         const params = new URLSearchParams(window.location.search);
         
-        // Extract query parameters from URL
-        const appId = Number(params.get("appID") || 747640475);
-        const secret = params.get("secret");
-        const roomID = params.get("roomID") || "nexo_test_room_01";
-        const userID = params.get("userID") || "user_" + Math.floor(Math.random() * 1000);
-        const userName = params.get("userName") || "Nexo Tester";
+        // Use token from parameter if passed, otherwise fallback to TEST_TOKEN
+        const kitToken = params.get("token") || TEST_TOKEN;
         const roleParam = (params.get("role") || "Host").toLowerCase();
 
-        if (!secret) {
-          throw new Error(
-            "Missing Server Secret!\n\n" +
-            "You must pass your ZEGOCLOUD Server Secret in the URL query string like this:\n" +
-            "?secret=YOUR_SERVER_SECRET&roomID=room123&role=Host"
-          );
+        if (!kitToken) {
+          throw new Error("No Kit Token provided.");
         }
-
-        // Generate dynamic Kit Token for testing
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-          appId,
-          secret,
-          roomID,
-          userID,
-          userName
-        );
 
         const isHost = roleParam === "host";
         const role = isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
@@ -83,7 +107,7 @@
           showMyCameraToggleButton: isHost,
           showMyMicrophoneToggleButton: isHost,
           onJoinRoom: () => {
-            console.log("Successfully joined live stream room:", roomID);
+            console.log("Successfully joined live stream as:", isHost ? "Host" : "Audience");
           },
           onLeaveRoom: () => {
             console.log("Left live stream.");
@@ -95,7 +119,7 @@
 
       } catch (err) {
         console.error("Initialization Error:", err);
-        showError("Test Setup Requirement", err.message || String(err));
+        showError("Unable to Connect", err.message || String(err));
       }
     }
 
