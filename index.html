@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -32,20 +33,19 @@
 
     #status {
       padding: 20px;
-      color: #ffffff;
+      color: white;
       white-space: pre-wrap;
       overflow-wrap: anywhere;
     }
   </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
 </head>
 
 <body>
   <div id="root">
     <p id="status">Loading NexoApp Live...</p>
   </div>
-
-  <!-- Stable ZEGOCLOUD SDK via jsDelivr CDN -->
-  <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
 
   <script>
     "use strict";
@@ -54,28 +54,50 @@
     // NEXOAPP LIVE CONFIGURATION
     // =====================================
 
-    // Correct AppID verified from your ZEGOCLOUD Console
+    // Correct App ID from your ZEGOCLOUD Console
     const APP_ID = 747640475;
-    
-    // Ensure SERVER_SECRET has no leading/trailing whitespace
-    const SERVER_SECRET = "f043619bceef40c26c03b46432eca06";
 
-    const params = new URLSearchParams(window.location.search);
+    // LOCAL TESTING ONLY.
+    // Never publish your Server Secret in GitHub Pages.
+    // Replace this placeholder only in a private local test.
+    const SERVER_SECRET =
+      "REPLACE_WITH_YOUR_NEW_SERVER_SECRET_FOR_LOCAL_TESTING";
 
-    // Sanitize Room ID to strictly allow alphanumeric characters, hyphens, and underscores
-    const rawRoom = params.get("roomID") || "nexo_live_room_01";
-    const ROOM_ID = String(rawRoom).replace(/[^a-zA-Z0-9_-]/g, "");
+    const params = new URLSearchParams(
+      window.location.search
+    );
 
-    const ROLE_NAME = params.get("role") || "Host";
+    // Room ID: host and audience must use the same value.
+    const rawRoom =
+      params.get("roomID") || "nexo_live_room_01";
 
-    // Standardized numeric-based User ID for ZEGOCLOUD authentication stability
-    const USER_ID = "user_" + Math.floor(Math.random() * 1000000);
-    
-    // Dynamic display name from URL or fallback default
-    const USER_NAME = params.get("userName") || (ROLE_NAME.toLowerCase() === "host" ? "Host User" : "Audience Member");
+    const ROOM_ID = String(rawRoom).replace(
+      /[^a-zA-Z0-9_-]/g,
+      ""
+    );
+
+    // Host or Audience
+    const ROLE_NAME = (
+      params.get("role") || "Host"
+    ).toLowerCase();
+
+    // Display name can be passed through the URL.
+    const USER_NAME =
+      params.get("userName") ||
+      (ROLE_NAME === "host"
+        ? "Olaniyi Olaleye"
+        : "Audience Member");
+
+    // Use a stable ID for the host.
+    // Give each audience participant a unique ID.
+    const USER_ID =
+      ROLE_NAME === "host"
+        ? "Olaniyi_Olaleye"
+        : "audience_" +
+          Math.random().toString(36).slice(2, 12);
 
     // =====================================
-    // DISPLAY ERRORS
+    // ERROR DISPLAY
     // =====================================
 
     function showError(title, details) {
@@ -84,56 +106,82 @@
 
       const heading = document.createElement("h3");
       heading.textContent = title;
+      heading.style.padding = "20px";
 
       const message = document.createElement("pre");
       message.style.cssText =
         "padding:20px;white-space:pre-wrap;" +
         "overflow-wrap:anywhere;color:white;";
+
       message.textContent = details;
 
       root.append(heading, message);
     }
 
     // =====================================
-    // START LIVE STREAMING
+    // START NEXOAPP LIVE
     // =====================================
 
     async function startNexoLive() {
       try {
         if (!window.ZegoUIKitPrebuilt) {
           throw new Error(
-            "ZEGOCLOUD SDK failed to load. Check your internet connection."
+            "ZEGOCLOUD SDK failed to load. " +
+            "Check your internet connection and reload."
           );
         }
 
-        // Dynamically generate test token for this specific user & room
-        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
-          APP_ID,
-          SERVER_SECRET,
-          ROOM_ID,
-          USER_ID,
-          USER_NAME
-        );
-
-        if (!kitToken) {
-          throw new Error("Failed to generate ZEGOCLOUD Kit Token.");
+        if (!APP_ID || !ROOM_ID) {
+          throw new Error(
+            "The App ID or Room ID is missing."
+          );
         }
 
-        // Select participant role
+        if (
+          !SERVER_SECRET ||
+          SERVER_SECRET.startsWith("REPLACE_WITH")
+        ) {
+          throw new Error(
+            "Authentication is not configured. " +
+            "The Server Secret placeholder must not be " +
+            "used as a real credential. Configure " +
+            "authentication securely before joining."
+          );
+        }
+
+        // TEST TOKEN GENERATION ONLY.
+        // This method uses the Server Secret in the browser.
+        // Do not deploy this configuration publicly.
+        const kitToken =
+          ZegoUIKitPrebuilt.generateKitTokenForTest(
+            APP_ID,
+            SERVER_SECRET,
+            ROOM_ID,
+            USER_ID,
+            USER_NAME
+          );
+
+        if (!kitToken) {
+          throw new Error(
+            "Failed to generate the ZEGOCLOUD Kit Token."
+          );
+        }
+
         const role =
-          ROLE_NAME.toLowerCase() === "audience"
+          ROLE_NAME === "audience"
             ? ZegoUIKitPrebuilt.Audience
             : ZegoUIKitPrebuilt.Host;
 
-        // Initialize UIKit with the generated token
         const zp = ZegoUIKitPrebuilt.create(kitToken);
 
-        // Uses current domain automatically (https://nexoappofficial.github.io/...)
-        const baseUrl = window.location.origin + window.location.pathname;
+        // Build the audience link using the current page.
+        const baseUrl =
+          window.location.origin +
+          window.location.pathname;
+
         const audienceURL =
           baseUrl +
-          "?roomID=" +
-          encodeURIComponent(ROOM_ID) +
+          "?roomID=" + encodeURIComponent(ROOM_ID) +
           "&role=Audience";
 
         const root = document.getElementById("root");
@@ -151,8 +199,11 @@
 
           showPreJoinView: true,
 
-          turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,
-          turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
+          turnOnCameraWhenJoining:
+            role === ZegoUIKitPrebuilt.Host,
+
+          turnOnMicrophoneWhenJoining:
+            role === ZegoUIKitPrebuilt.Host,
 
           sharedLinks: [
             {
@@ -162,7 +213,10 @@
           ],
 
           onJoinRoom: function () {
-            console.log("NexoApp Live joined successfully:", ROOM_ID);
+            console.log(
+              "NexoApp Live joined successfully:",
+              ROOM_ID
+            );
           },
 
           onLeaveRoom: function () {
@@ -175,13 +229,18 @@
 
         showError(
           "NexoApp Live could not start",
-          error && error.stack ? error.stack : String(error)
+          error && error.message
+            ? error.message
+            : String(error)
         );
       }
     }
 
-    // Wait for the page to finish loading
-    window.addEventListener("load", startNexoLive);
+    // Start only after the page has loaded.
+    window.addEventListener(
+      "load",
+      startNexoLive
+    );
   </script>
 </body>
 </html>
