@@ -44,7 +44,8 @@
     <p id="status">Loading NexoApp Live...</p>
   </div>
 
-  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+  <!-- Pinned stable version of ZEGOCLOUD UIKit Prebuilt to fix chunk loading & getVersion issues -->
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt@2.18.1/zego-uikit-prebuilt.js"></script>
 
   <script>
     "use strict";
@@ -101,7 +102,7 @@
           );
         }
 
-        // Generate the test Kit Token dynamically using App ID and Server Secret
+        // Generate the test Kit Token dynamically using App ID and Server Secret[span_0](start_span)[span_0](end_span)
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
           APP_ID,
           SERVER_SECRET,
