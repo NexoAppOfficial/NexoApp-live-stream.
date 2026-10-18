@@ -1,100 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#000000">
-  <title>NexoApp Live Test</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body, #root {
-      width: 100vw;
-      height: 100vh;
-      background: #000000;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-    #loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-size: 18px;
-      color: #a0a0a0;
-    }
-    #error-box {
-      padding: 30px;
-      color: #ff5252;
-    }
-    #error-box h3 { margin-bottom: 10px; }
-    #error-box pre {
-      background: #111;
-      padding: 15px;
-      border-radius: 6px;
-      color: #fff;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-  </style>
-
-  <!-- Load local SDK file from your own repo -->
-  <script src="./zego-uikit-prebuilt.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXO Live Streaming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
 </head>
 <body>
-  <div id="root">
-    <div id="loading">Starting NexoApp Live Test...</div>
-  </div>
+    <div id="root"></div>
 
-  <script>
-    "use strict";
-
-    window.addEventListener("load", async function() {
-      try {
-        if (!window.ZegoUIKitPrebuilt) {
-          throw new Error("Local zego-uikit-prebuilt.js file was not found or failed to parse.");
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script>
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1];
+            if (!urlStr) return {};
+            const urlSearchParams = new URLSearchParams(urlStr);
+            return Object.fromEntries(urlSearchParams.entries());
         }
 
-        const kitToken = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
+        // ========== Your Project Credentials ==========
+        const appID = 747640475;
+        const serverSecret = "f043619bceef40c26c0c3b46432eca06";
+        // =============================================
 
-        const params = new URLSearchParams(window.location.search);
-        const roleParam = (params.get("role") || "Host").toLowerCase();
-        const role = roleParam === "audience" ? ZegoUIKitPrebuilt.Audience : ZegoUIKitPrebuilt.Host;
+        // Room ID (same room = same live stream)
+        const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
 
+        // Unique user for each person who opens the page
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "User_" + userID;
+
+        // Generate temporary Kit Token (for testing only)
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            roomID,
+            userID,
+            userName
+        );
+
+        // Role: Host (default) or Audience
+        let role = getUrlParams(window.location.href)['role'] || 'Host';
+        role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
+
+        // Start the Live Streaming
         const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-        const rootElement = document.getElementById("root");
-        rootElement.innerHTML = "";
-
-        await zp.joinRoom({
-          container: rootElement,
-          scenario: {
-            mode: ZegoUIKitPrebuilt.LiveStreaming,
-            config: { role: role }
-          },
-          showPreJoinView: false,
-          turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,
-          turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
-          showMyCameraToggleButton: true,
-          showMyMicrophoneToggleButton: true,
-          onJoinRoom: () => {
-            console.log("Successfully joined live stream!");
-          },
-          onLeaveRoom: () => {
-            console.log("Left room.");
-          }
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: {
+                    role,
+                },
+            },
+            sharedLinks: [{
+                name: 'Join as Audience',
+                url: window.location.protocol + '//' +
+                     window.location.host + window.location.pathname +
+                     '?roomID=' + roomID + '&role=Audience',
+            }],
+            showScreenSharingButton: true,
+            showTextChat: true,
+            showUserList: true,
         });
-
-      } catch (error) {
-        console.error("Test error:", error);
-        document.getElementById("root").innerHTML = `
-          <div id="error-box">
-            <h3>Test Error</h3>
-            <pre>${error.message || error}</pre>
-          </div>
-        `;
-      }
-    });
-  </script>
+    </script>
 </body>
 </html>
