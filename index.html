@@ -7,62 +7,35 @@
   <title>NexoApp Live Test</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    html, body, #root {
-      width: 100vw;
-      height: 100vh;
-      background-color: #000000;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    #status {
-      padding: 30px;
-      text-align: center;
-      color: #a0a0a0;
-      font-size: 16px;
-    }
-
-    #error-container {
-      padding: 30px;
-      color: #ff5252;
-    }
-
-    #error-container h3 {
-      margin-bottom: 12px;
-    }
-
-    #error-container pre {
-      background: #1e1e1e;
-      padding: 16px;
-      border-radius: 8px;
-      color: #ffffff;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body, #root { width: 100vw; height: 100vh; background-color: #000000; color: #ffffff; font-family: Arial, sans-serif; overflow: hidden; }
+    #status { padding: 30px; text-align: center; color: #a0a0a0; font-size: 16px; }
+    #error-container { padding: 30px; color: #ff5252; }
+    #error-container h3 { margin-bottom: 12px; }
+    #error-container pre { background: #1e1e1e; padding: 16px; border-radius: 8px; color: #ffffff; white-space: pre-wrap; word-break: break-word; }
   </style>
 
-  <script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt@2.17.3/zego-uikit-prebuilt.js"></script>
+  <!-- Primary CDN: UNPKG Official ZEGOCLOUD SDK -->
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+
+  <!-- Fallback CDN: jsDelivr (if unpkg fails to load on mobile network) -->
+  <script>
+    if (!window.ZegoUIKitPrebuilt) {
+      document.write('<script src="https://cdn.jsdelivr.net/npm/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"><\/script>');
+    }
+  </script>
 </head>
 
 <body>
   <div id="root">
-    <p id="status">Connecting to NexoApp Live...</p>
+    <p id="status">Connecting to NexoApp Live engine...</p>
   </div>
 
   <script>
     "use strict";
 
-    // Default testing configuration
+    // Embedded test credentials
     const TEST_TOKEN = "04AAAAAGrWkNkADBsgIJKtYnNhZKxjzQCwhcyGVbwSabMjqOevS9nW+DqVL6CFL9V41GBJ1Z1ALb7r0jUDDXgvXCH+vqnCNKc+vGDCnCduP/sGhHcO6XA3Ldoz1n91jAKElWfnBoOT6mo+0KWvem2/VEqlSUvjseRRJt+qIuBqY5UZAABLy4VqGHtQZKraVbzNHPyhHrT6nOnCSjA67F12T4eBCQN1caT8dnS4pugGs6W2ry4o83SD3UO7T90bN6oudqhRNHtlINIB";
-    const TEST_USER_ID = "Olaniyi";
-    const TEST_USER_NAME = "Olaniyi";
 
     function showError(title, message) {
       document.getElementById("root").innerHTML = `
@@ -76,18 +49,12 @@
     async function startLiveStream() {
       try {
         if (!window.ZegoUIKitPrebuilt) {
-          throw new Error("ZEGOCLOUD SDK failed to load. Please check your internet connection.");
+          throw new Error("SDK Load Failed: Could not load ZEGOCLOUD libraries from unpkg or jsDelivr. Please check your mobile data or Wi-Fi connection.");
         }
 
         const params = new URLSearchParams(window.location.search);
-        
-        // Use token from parameter if passed, otherwise fallback to TEST_TOKEN
         const kitToken = params.get("token") || TEST_TOKEN;
         const roleParam = (params.get("role") || "Host").toLowerCase();
-
-        if (!kitToken) {
-          throw new Error("No Kit Token provided.");
-        }
 
         const isHost = roleParam === "host";
         const role = isHost ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
@@ -107,19 +74,15 @@
           showMyCameraToggleButton: isHost,
           showMyMicrophoneToggleButton: isHost,
           onJoinRoom: () => {
-            console.log("Successfully joined live stream as:", isHost ? "Host" : "Audience");
+            console.log("Joined room successfully as:", isHost ? "Host" : "Audience");
           },
           onLeaveRoom: () => {
-            console.log("Left live stream.");
-            if (window.AppInventor) {
-              window.AppInventor.setWebViewString("LIVE_ENDED");
-            }
+            console.log("Left live stream room.");
           }
         });
 
       } catch (err) {
-        console.error("Initialization Error:", err);
-        showError("Unable to Connect", err.message || String(err));
+        showError("Connection Error", err.message || String(err));
       }
     }
 
