@@ -5,8 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NEXO Live Streaming</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        #root { width: 100vw; height: 100vh; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
     </style>
 </head>
 <body>
@@ -21,16 +28,19 @@
             return Object.fromEntries(urlSearchParams.entries());
         }
 
-        // Your credentials
+        // ========== Your Project Credentials ==========
         const appID = 747640475;
         const serverSecret = "f043619bceef40c26c0c3b46432eca06";
+        // =============================================
 
-        // Fixed room ID for testing
+        // Room ID (same room = same live stream)
         const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
 
+        // Unique user for each person who opens the page
         const userID = Math.floor(Math.random() * 10000) + "";
         const userName = "User_" + userID;
 
+        // Generate temporary Kit Token (for testing only)
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
             appID,
             serverSecret,
@@ -39,9 +49,11 @@
             userName
         );
 
+        // Role: Host (default) or Audience
         let role = getUrlParams(window.location.href)['role'] || 'Host';
         role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
+        // Start the Live Streaming
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
             container: document.querySelector("#root"),
@@ -51,18 +63,15 @@
                     role,
                 },
             },
-                        sharedLinks: [
-                {
-                    name: 'Join as Audience',
-                    url: window.location.origin + window.location.pathname + 
-                         '?roomID=' + ROOM_ID + '&role=Audience'
-                }
-            ],
+            sharedLinks: [{
+                name: 'Join as Audience',
+                url: window.location.protocol + '//' +
+                     window.location.host + window.location.pathname +
+                     '?roomID=' + roomID + '&role=Audience',
+            }],
             showScreenSharingButton: true,
             showTextChat: true,
             showUserList: true,
-        });
-
         });
     </script>
 </body>
