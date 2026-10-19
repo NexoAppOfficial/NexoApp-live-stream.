@@ -1,231 +1,81 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    >
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NEXO Live Streaming</title>
-
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
         html, body, #root {
             width: 100%;
             height: 100%;
             overflow: hidden;
             background: #000;
-            color: #fff;
-            font-family: Arial, sans-serif;
         }
     </style>
 </head>
-
 <body>
     <div id="root"></div>
 
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
-
     <script>
-        // =====================================
-        // NEXO LIVE CONFIGURATION
-        // =====================================
-
-        const appID = 747640475;
-
-        // TESTING ONLY.
-        // Use your rotated test secret here.
-        // Never publish a server secret in production HTML.
-        const serverSecret = "PASTE_YOUR_ROTATED_TEST_SECRET_HERE";
-
-        // =====================================
-        // READ ROOM AND ROLE
-        // =====================================
-
-        const params = new URLSearchParams(
-            window.location.search
-        );
-
-        const roomID =
-            params.get("roomID") || "nexo_test_room";
-
-        const roleParam =
-            (params.get("role") || "Host").toLowerCase();
-
-        const isAudience = roleParam === "audience";
-
-        // Keep the host ID as Olaniyi.
-        // Give each audience participant a separate ID.
-        const userID = isAudience
-            ? "viewer_" + crypto.randomUUID()
-            : "Olaniyi";
-
-        const userName = isAudience
-            ? "NEXO Viewer"
-            : "Olaniyi";
-
-        // =====================================
-        // CREATE ZEGO TOKEN
-        // =====================================
-
-        async function startNexoLive() {
-            try {
-                if (
-                    typeof ZegoUIKitPrebuilt === "undefined"
-                ) {
-                    throw new Error(
-                        "Zego UIKit did not load. Check your internet connection."
-                    );
-                }
-
-                if (
-                    !serverSecret ||
-                    serverSecret ===
-                    "PASTE_YOUR_ROTATED_TEST_SECRET_HERE"
-                ) {
-                    throw new Error(
-                        "Enter your rotated test secret in the configuration."
-                    );
-                }
-
-                if (!roomID.trim()) {
-                    throw new Error("Room ID is missing.");
-                }
-
-                const kitToken =
-                    ZegoUIKitPrebuilt.generateKitTokenForTest(
-                        appID,
-                        serverSecret,
-                        roomID,
-                        userID,
-                        userName
-                    );
-
-                if (!kitToken) {
-                    throw new Error(
-                        "Zego could not generate a Kit Token."
-                    );
-                }
-
-                const zp =
-                    ZegoUIKitPrebuilt.create(kitToken);
-
-                const role = isAudience
-                    ? ZegoUIKitPrebuilt.Audience
-                    : ZegoUIKitPrebuilt.Host;
-
-                // =====================================
-                // CREATE THE CORRECT AUDIENCE LINK
-                // =====================================
-
-                const audienceURL = new URL(
-                    window.location.href
-                );
-
-                audienceURL.search = "";
-                audienceURL.searchParams.set(
-                    "roomID",
-                    roomID
-                );
-                audienceURL.searchParams.set(
-                    "role",
-                    "Audience"
-                );
-
-                // =====================================
-                // JOIN NEXO LIVE
-                // =====================================
-
-                await zp.joinRoom({
-                    container:
-                        document.querySelector("#root"),
-
-                    scenario: {
-                        mode:
-                            ZegoUIKitPrebuilt.LiveStreaming,
-                        config: {
-                            role: role
-                        }
-                    },
-
-                    sharedLinks: [
-                        {
-                            name: "Join NEXO Live",
-                            url: audienceURL.toString()
-                        }
-                    ],
-
-                    showScreenSharingButton: !isAudience,
-                    showTextChat: true,
-                    showUserList: true,
-                    showDuration: true,
-                    maxDuration: 0,
-
-                    turnOnMicrophoneWhenJoining:
-                        !isAudience,
-
-                    turnOnCameraWhenJoining:
-                        !isAudience
-                });
-
-                console.log("NEXO Live started.");
-                console.log("Room ID:", roomID);
-                console.log("Role:", roleParam);
-                console.log(
-                    "Audience join link:",
-                    audienceURL.toString()
-                );
-
-            } catch (error) {
-                console.error(
-                    "NEXO Live error:",
-                    error
-                );
-
-                document.querySelector("#root").innerHTML = `
-                    <div style="
-                        color:white;
-                        padding:24px;
-                        font-family:Arial,sans-serif;
-                        line-height:1.6;
-                    ">
-                        <h2 style="color:#a78bfa">
-                            NEXO Live
-                        </h2>
-                        <p id="errorMessage"></p>
-                        <button
-                            onclick="location.reload()"
-                            style="
-                                margin-top:16px;
-                                padding:12px 20px;
-                                background:#7c3aed;
-                                color:white;
-                                border:0;
-                                border-radius:8px;
-                            "
-                        >
-                            Try Again
-                        </button>
-                    </div>
-                `;
-
-                document.getElementById(
-                    "errorMessage"
-                ).textContent =
-                    "Unable to join the livestream: " +
-                    error.message;
-            }
+        function getUrlParams(url) {
+            const urlStr = url.split('?')[1];
+            if (!urlStr) return {};
+            return Object.fromEntries(new URLSearchParams(urlStr).entries());
         }
 
-        startNexoLive();
+        // ========== Your Credentials ==========
+        const appID = 747640475;
+        const serverSecret = "f043619bceef40c26c0c3b46432eca06";
+        // =====================================
+
+        const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "User_" + userID;
+
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            roomID,
+            userID,
+            userName
+        );
+
+        // Better role handling
+        const roleParam = (getUrlParams(window.location.href)['role'] || 'Host').toLowerCase();
+        const role = roleParam === 'audience' 
+            ? ZegoUIKitPrebuilt.Audience 
+            : ZegoUIKitPrebuilt.Host;
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+
+        zp.joinRoom({
+            container: document.querySelector("#root"),
+            scenario: {
+                mode: ZegoUIKitPrebuilt.LiveStreaming,
+                config: {
+                    role: role,
+                },
+            },
+            // Correct share link (uses current URL automatically)
+            sharedLinks: [{
+                name: 'Join as Audience',
+                url: window.location.origin + window.location.pathname + 
+                     '?roomID=' + roomID + '&role=Audience'
+            }],
+            showScreenSharingButton: true,
+            showTextChat: true,
+            showUserList: true,
+            showDuration: true,           // Show live time
+            maxDuration: 0,               // No time limit
+            turnOnMicrophoneWhenJoining: role === ZegoUIKitPrebuilt.Host,
+            turnOnCameraWhenJoining: role === ZegoUIKitPrebuilt.Host,
+        });
     </script>
 </body>
 </html>
