@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0"
     >
 
     <title>NEXO Live Streaming</title>
@@ -17,12 +18,9 @@
             box-sizing: border-box;
         }
 
-        html,
-        body,
-        #root {
+        html, body, #root {
             width: 100%;
             height: 100%;
-            min-height: 100%;
             overflow: hidden;
             background: #000;
             color: #fff;
@@ -74,43 +72,58 @@
 </head>
 
 <body>
+
     <div id="root"></div>
 
     <div id="status">
         <div id="statusContent">
             <h2>NEXO Live</h2>
-            <p id="statusMessage">Loading livestream...</p>
-            <button id="retryButton" hidden onclick="location.reload()">
+
+            <p id="statusMessage">
+                Loading livestream...
+            </p>
+
+            <button id="retryButton" hidden>
                 Try Again
             </button>
         </div>
     </div>
 
-    <!-- Load the Zego UIKit library -->
+    <!-- Zego UIKit -->
     <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
 
     <script>
-        // =========================================
-        // NEXO LIVE STREAMING CONFIGURATION
-        // =========================================
+        // =====================================
+        // NEXO LIVE CONFIGURATION
+        // =====================================
 
         const appID = 747640475;
 
+        // Your user identity
+        const userID = "Olaniyi";
+        const userName = "Olaniyi";
+
         /*
-         * TESTING ONLY:
-         * Never publish your serverSecret in browser code.
-         * Use a secure backend to generate Zego tokens
-         * before using this in a production application.
+         * SECURITY:
+         * Do not put your Zego Server Secret in this file.
+         *
+         * A temporary token must be generated or supplied
+         * in the format supported by your Zego integration.
+         *
+         * For production, obtain a valid Kit Token from
+         * your secure backend.
          */
-        const serverSecret = "REPLACE_WITH_A_SECURE_TEST_SECRET";
 
-        // =========================================
+        // =====================================
         // PAGE ELEMENTS
-        // =========================================
+        // =====================================
 
+        const root = document.getElementById("root");
         const statusBox = document.getElementById("status");
-        const statusMessage = document.getElementById("statusMessage");
-        const retryButton = document.getElementById("retryButton");
+        const statusMessage =
+            document.getElementById("statusMessage");
+        const retryButton =
+            document.getElementById("retryButton");
 
         function showStatus(message, showRetry = false) {
             statusBox.classList.remove("hidden");
@@ -122,13 +135,20 @@
             statusBox.classList.add("hidden");
         }
 
-        // =========================================
-        // READ URL PARAMETERS
-        // =========================================
+        retryButton.addEventListener("click", function () {
+            location.reload();
+        });
 
-        const params = new URLSearchParams(window.location.search);
+        // =====================================
+        // ROOM AND ROLE
+        // =====================================
 
-        const roomID = params.get("roomID") || "nexo_test_room";
+        const params = new URLSearchParams(
+            window.location.search
+        );
+
+        const roomID =
+            params.get("roomID") || "nexo_test_room";
 
         const requestedRole = (
             params.get("role") || "Host"
@@ -136,36 +156,26 @@
 
         const isAudience = requestedRole === "audience";
 
-        // Each participant needs a distinct, stable ID for this session.
-        const userID =
-            "nexo_" +
-            Date.now().toString(36) +
-            "_" +
-            Math.random().toString(36).slice(2, 9);
-
-        const userName = isAudience
-            ? "NEXO Viewer"
-            : "NEXO Host";
-
-        // =========================================
-        // VALIDATE CONFIGURATION
-        // =========================================
+        // =====================================
+        // START LIVESTREAM
+        // =====================================
 
         async function startLiveStream() {
             try {
-                if (
-                    !Number.isInteger(appID) ||
-                    appID <= 0 ||
-                    !serverSecret ||
-                    serverSecret === "REPLACE_WITH_A_SECURE_TEST_SECRET"
-                ) {
-                    throw new Error(
-                        "Zego credentials are not configured. Set up secure token generation before testing."
-                    );
+                if (!Number.isInteger(appID) || appID <= 0) {
+                    throw new Error("Invalid Zego App ID.");
                 }
 
                 if (!roomID.trim()) {
-                    throw new Error("The room ID is missing.");
+                    throw new Error("Room ID is missing.");
+                }
+
+                if (
+                    typeof ZegoUIKitPrebuilt === "undefined"
+                ) {
+                    throw new Error(
+                        "Zego UIKit failed to load. Check your internet connection."
+                    );
                 }
 
                 showStatus(
@@ -174,112 +184,40 @@
                         : "Starting NEXO livestream..."
                 );
 
-                // Check that the Zego script loaded successfully.
-                if (
-                    typeof ZegoUIKitPrebuilt === "undefined"
-                ) {
-                    throw new Error(
-                        "Zego UIKit did not load. Check your internet connection and the Zego script URL."
-                    );
-                }
+                /*
+                 * A valid Zego Kit Token is required here.
+                 *
+                 * Do not pass an unknown temporary token into
+                 * generateKitTokenForTest().
+                 *
+                 * Connect this section to your secure token
+                 * generation endpoint before joining the room.
+                 */
 
-                // =================================
-                // GENERATE KIT TOKEN
-                // TESTING ONLY
-                // =================================
-
-                const kitToken =
-                    ZegoUIKitPrebuilt.generateKitTokenForTest(
-                        appID,
-                        serverSecret,
-                        roomID,
-                        userID,
-                        userName
-                    );
-
-                if (!kitToken) {
-                    throw new Error(
-                        "Unable to generate the Zego room token."
-                    );
-                }
-
-                // =================================
-                // CREATE ZEGO INSTANCE
-                // =================================
-
-                const zp = ZegoUIKitPrebuilt.create(kitToken);
-
-                const role = isAudience
-                    ? ZegoUIKitPrebuilt.Audience
-                    : ZegoUIKitPrebuilt.Host;
-
-                // Build a proper audience URL using the current page.
-                const audienceURL = new URL(
-                    window.location.pathname,
-                    window.location.origin
+                throw new Error(
+                    "A valid Zego Kit Token is required. Connect your temporary token or secure token endpoint before joining."
                 );
 
-                audienceURL.searchParams.set("roomID", roomID);
-                audienceURL.searchParams.set("role", "Audience");
-
-                // =================================
-                // JOIN LIVESTREAM
-                // =================================
-
-                await zp.joinRoom({
-                    container: document.querySelector("#root"),
-
-                    scenario: {
-                        mode: ZegoUIKitPrebuilt.LiveStreaming,
-                        config: {
-                            role: role
-                        }
-                    },
-
-                    sharedLinks: [
-                        {
-                            name: "Join as Audience",
-                            url: audienceURL.toString()
-                        }
-                    ],
-
-                    showScreenSharingButton: !isAudience,
-                    showTextChat: true,
-                    showUserList: true,
-                    showDuration: true,
-
-                    // Zero means no configured duration limit.
-                    maxDuration: 0,
-
-                    turnOnMicrophoneWhenJoining: !isAudience,
-                    turnOnCameraWhenJoining: !isAudience
-                });
-
-                hideStatus();
-
-                console.log("NEXO livestream joined.");
-                console.log("Room ID:", roomID);
-                console.log("Role:", isAudience ? "Audience" : "Host");
-                console.log("Audience URL:", audienceURL.toString());
-
             } catch (error) {
-                console.error("NEXO livestream error:", error);
+                console.error(
+                    "NEXO livestream error:",
+                    error
+                );
 
                 showStatus(
-                    "Unable to join the livestream. " +
-                    (error && error.message
-                        ? error.message
-                        : "Please check your connection and Zego configuration."),
+                    "Unable to start NEXO Live. " +
+                    (error.message || "Please try again."),
                     true
                 );
             }
         }
 
-        // =========================================
+        // =====================================
         // START
-        // =========================================
+        // =====================================
 
         startLiveStream();
     </script>
+
 </body>
 </html>
