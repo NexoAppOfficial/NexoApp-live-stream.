@@ -1,3 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXO Live Streaming</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        #root {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+    <script>
+        function getUrlParams(url) {
+            let urlStr = url.split('?')[1];
+            if (!urlStr) return {};
+            const urlSearchParams = new URLSearchParams(urlStr);
+            return Object.fromEntries(urlSearchParams.entries());
+        }
+
+        // ========== Your Project Credentials ==========
+        const appID = 747640475;
+        const serverSecret = "f043619bceef40c26c0c3b46432eca06";
+        // =============================================
+
+        const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
+        const userID = Math.floor(Math.random() * 10000) + "";
+        const userName = "User_" + userID;
+
+        const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+            appID,
+            serverSecret,
+            roomID,
+            userID,
+            userName
+        );
+
+        // Role handling
+        const roleParam = (getUrlParams(window.location.href)['role'] || 'Host').toLowerCase();
+        const role = roleParam === 'audience' 
+            ? ZegoUIKitPrebuilt.Audience 
+            : ZegoUIKitPrebuilt.Host;
+
+        const zp = ZegoUIKitPrebuilt.create(kitToken);
+
         zp.joinRoom({
             container: document.querySelector("#root"),
             scenario: {
@@ -6,7 +61,7 @@
                     role: role,
                 },
             },
-            // ✅ Robust URL construction for local or live servers
+            // ✅ Updated robust URL construction for audience sharing
             sharedLinks: [{
                 name: 'Join as Audience',
                 url: window.location.protocol + '//' + 
@@ -18,3 +73,6 @@
             showTextChat: true,
             showUserList: true,
         });
+    </script>
+</body>
+</html>
