@@ -51,14 +51,18 @@
                     role,
                 },
             },
-            sharedLinks: [{
-                name: 'Join as Audience',
-                url: window.location.origin + window.location.pathname + 
-                     '?roomID=' + roomID + '&role=Audience'
-            }],
+                        sharedLinks: [
+                {
+                    name: 'Join as Audience',
+                    url: window.location.origin + window.location.pathname + 
+                         '?roomID=' + ROOM_ID + '&role=Audience'
+                }
+            ],
             showScreenSharingButton: true,
             showTextChat: true,
             showUserList: true,
+        });
+
         });
     </script>
 </body>
