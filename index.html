@@ -2,9 +2,14 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXO Live Streaming Test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXO Live Streaming</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         #root {
             width: 100vw;
             height: 100vh;
@@ -23,13 +28,15 @@
             return Object.fromEntries(urlSearchParams.entries());
         }
 
-        // ========== FILL THESE TWO ==========
-        const appID = 747640475;                    // your AppID
-        const serverSecret = "PASTE_YOUR_SERVER_SECRET_HERE";  // from console (eye icon)
-        // ====================================
+        // ========== Your Project Credentials ==========
+        const appID = 747640475;
+        const serverSecret = "f043619bceef40c26c0c3b46432eca06";
+        // =============================================
 
-        // Room ID (same room = same live). You can change it or pass via URL.
+        // Room ID (same room = same live stream)
         const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
+
+        // Unique user for each person who opens the page
         const userID = Math.floor(Math.random() * 10000) + "";
         const userName = "User_" + userID;
 
@@ -42,10 +49,11 @@
             userName
         );
 
-        // Role: Host or Audience (from URL ?role=Audience)
+        // Role: Host (default) or Audience
         let role = getUrlParams(window.location.href)['role'] || 'Host';
         role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
+        // Start the Live Streaming
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
             container: document.querySelector("#root"),
@@ -61,7 +69,6 @@
                      window.location.host + window.location.pathname +
                      '?roomID=' + roomID + '&role=Audience',
             }],
-            // Optional: show more features
             showScreenSharingButton: true,
             showTextChat: true,
             showUserList: true,
