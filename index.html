@@ -33,14 +33,10 @@
         const serverSecret = "f043619bceef40c26c0c3b46432eca06";
         // =============================================
 
-        // Room ID (same room = same live stream)
         const roomID = getUrlParams(window.location.href)['roomID'] || "nexo_test_room";
-
-        // Unique user for each person who opens the page
         const userID = Math.floor(Math.random() * 10000) + "";
         const userName = "User_" + userID;
 
-        // Generate temporary Kit Token (for testing only)
         const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
             appID,
             serverSecret,
@@ -49,11 +45,9 @@
             userName
         );
 
-        // Role: Host (default) or Audience
         let role = getUrlParams(window.location.href)['role'] || 'Host';
         role = role === 'Host' ? ZegoUIKitPrebuilt.Host : ZegoUIKitPrebuilt.Audience;
 
-        // Start the Live Streaming
         const zp = ZegoUIKitPrebuilt.create(kitToken);
         zp.joinRoom({
             container: document.querySelector("#root"),
@@ -65,9 +59,8 @@
             },
             sharedLinks: [{
                 name: 'Join as Audience',
-                url: window.location.protocol + '//' +
-                     window.location.host + window.location.pathname +
-                     '?roomID=' + roomID + '&role=Audience',
+                // Hard-coded correct link (because of the period in your repo name)
+                url: 'https://nexoappofficial.github.io/nexo-live-stream./?roomID=' + roomID + '&role=Audience'
             }],
             showScreenSharingButton: true,
             showTextChat: true,
